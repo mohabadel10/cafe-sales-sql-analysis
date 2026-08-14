@@ -135,8 +135,11 @@ Monthly average transaction value remained relatively stable throughout the year
 ## SQL Analysis
 
 All SQL queries used for data profiling, cleaning, validation, and exploratory analysis are included in:
-
 cafe_sales_analysis.sql
+
+## Dataset
+The original dataset used in this project is included in:
+cafe_sales.csv
 
 ## Conclusion
 

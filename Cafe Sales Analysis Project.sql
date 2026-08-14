@@ -1,5 +1,10 @@
+-- 1. Data Preparation
+
 SELECT *
 FROM dirty_cafe_sales;
+
+
+-- Create a separate working table to preserve the original dataset
 
 CREATE TABLE cafe_sales1
 LIKE dirty_cafe_sales;
@@ -8,10 +13,14 @@ INSERT cafe_sales1
 SELECT *
 FROM dirty_cafe_sales;
 
+
+-- Verify the working table
+
 SELECT *
 FROM cafe_sales1;
 
 
+-- 2. Data Cleaning
 -- Standardize missing values in the Item column
 
 SELECT *
@@ -31,7 +40,7 @@ FROM cafe_sales1
 GROUP BY Item;
 
 
--- Standardize missing values in the payment method column
+-- Standardize missing values in the Payment Method column
 
 SELECT *
 FROM cafe_sales1
@@ -78,7 +87,7 @@ WHERE Quantity = 'UNKNOWN'
     OR TRIM(Quantity) = ''
     OR Quantity IS NULL;
 
-# No invalid placeholder values (UNKNOWN, ERROR, or Blank) were found
+-- No invalid placeholder values (UNKNOWN, ERROR, or Blank) were found
 
 
 -- Standardize missing values in the Price Per Unit column
@@ -90,7 +99,7 @@ WHERE Price_Per_Unit = 'UNKNOWN'
     OR TRIM(Price_Per_Unit) = ''
     OR Price_Per_Unit IS NULL;
 
-# No invalid placeholder values (UNKNOWN, ERROR, or Blank) were found
+-- No invalid placeholder values (UNKNOWN, ERROR, or Blank) were found
 
 
 -- Standardize missing values in the Total Spent column
@@ -111,6 +120,7 @@ WHERE Total_Spent = 'UNKNOWN'
 GROUP BY Total_Spent;
 
 
+-- 3. Data Validation
 -- Validate Total Spent
 
 SELECT Quantity, price_per_unit, total_spent, Quantity * price_per_unit AS Calculated_Total
@@ -142,7 +152,7 @@ SELECT *
 FROM cafe_sales1
 WHERE Total_Spent != quantity * Price_Per_Unit;
 
-# No rows returned
+-- No rows returned
 
 
 -- Location Value Validation
@@ -160,7 +170,7 @@ WHERE location IS NULL
 GROUP BY Item
 ORDER BY total_null_location DESC;
 
-# Keep Missing Location Values as NULL (3564 values) – no reliable relationship was found between Item and Location
+-- Keep Missing Location Values as NULL (3564 values) – no reliable relationship was found between Item and Location
 
 
 -- Data Validation
@@ -168,21 +178,21 @@ ORDER BY total_null_location DESC;
 SELECT *
 FROM cafe_sales1
 WHERE Quantity > 5
-	OR QUantity < 1;
+	OR Quantity < 1;
 
-# no rows returned
+-- no rows returned: all Quantity values are within the expected range of 1-5
 
 SELECT *
 FROM cafe_sales1
 WHERE Price_Per_Unit <= 0;
 
-# no rows returned
+-- no rows returned: no zero or negative Price Per Unit values were found
 
 SELECT *
 FROM cafe_sales1
 WHERE Total_Spent <= 0;
 
-# no rows returned
+-- no rows returned: no zero or negative Total Spent values were found
 
 SELECT Quantity, Price_Per_Unit, Total_Spent
 FROM cafe_sales1
@@ -190,7 +200,7 @@ WHERE Quantity IS NULL
 	OR Price_Per_Unit IS NULL
     OR Total_Spent IS NULL;
 
-# no rows returned
+-- no rows returned: no NULL values were found in Quantity, Price Per Unit, or Total Spent
 
 
 -- Duplicate records detection
@@ -204,7 +214,7 @@ SELECT *
 FROM duplicate_cte
 WHERE row_num > 1;
 
-# no rows returned
+-- no rows returned: no duplicate records were found
 
 
 -- Transaction ID validation
@@ -214,7 +224,7 @@ FROM cafe_sales1
 GROUP BY Transaction_ID
 HAVING total > 1;
 
-# no rows returned ( Transaction IDs are unique )
+-- no rows returned: Transaction IDs are unique
 
 
 -- Transaction ID missing values
@@ -226,7 +236,7 @@ WHERE Transaction_ID IS NULL
     OR Transaction_ID = 'UNKNOWN'
     OR TRIM(Transaction_ID) = '';
 
-# no rows returned
+-- no rows returned: no missing or invalid Transaction IDs were found
 
 
 -- Transaction Date Validation
@@ -261,7 +271,7 @@ WHERE Transaction_Date IS NOT NULL
 GROUP BY Transaction_Date
 ORDER BY Transaction_Date;
 
-# All valid transaction dates follow the same YYYY-MM-DD format
+-- All valid transaction dates follow the same YYYY-MM-DD format
 
 
 -- Transaction Date Missing Value Assessment
@@ -274,10 +284,10 @@ WHERE Transaction_Date = 'UNKNOWN'
     OR TRIM(Transaction_Date) = ''
 GROUP BY Item, Transaction_Date;
 
-# no pattern between item and transaction date
+-- no reliable pattern between item and transaction date
 
 
--- Standardize Invalid Transaction Dates
+-- Standardize Invalid Transaction Dates to NULL
 
 UPDATE cafe_sales1
 SET Transaction_Date = 'NULL'
@@ -299,7 +309,7 @@ SELECT COUNT(*) AS total_nulls
 FROM cafe_sales1
 WHERE Transaction_Date IS NULL;
 
-#Error, unknown, and blank date values were converted to NULL
+-- Error, unknown, and blank date values were converted to NULL
 
 
 -- Transaction Date Range Validation
@@ -307,7 +317,7 @@ WHERE Transaction_Date IS NULL;
 SELECT MAX(Transaction_Date), MIN(Transaction_Date)
 FROM cafe_sales1;
 
-# valid transaction dates range from 2023-01-01 to 2023-12-31
+-- valid transaction dates range from 2023-01-01 to 2023-12-31
 
 
 -- Transaction Date Completeness
@@ -316,7 +326,7 @@ SELECT COUNT(DISTINCT Transaction_Date) AS Distinct_dates
 FROM cafe_sales1
 WHERE Transaction_Date IS NOT NULL;
 
-# all 365 days of 2023 are represented in the dataset
+-- all 365 days of 2023 are represented in the dataset
 
 
 -- Daily Transaction Volume
@@ -327,9 +337,9 @@ WHERE Transaction_Date IS NOT NULL
 GROUP BY Transaction_Date
 ORDER BY Transaction_Date ASC;
 
-# calculated the number of transactions recorded for each valid date
+-- calculated the number of transactions recorded for each valid date
 
-
+-- 4. Exploratory Data Analysis (EDA)
 -- Highest Transaction Volume Day
 
 SELECT Transaction_date, COUNT(*) AS total_transactions
@@ -339,7 +349,7 @@ GROUP BY Transaction_Date
 ORDER BY total_transactions DESC
 LIMIT 1;
 
-# identified 2023-06-16 as the date with hte highest transaction volume, with 38 transactions
+-- identified 2023-06-16 as the date with hte highest transaction volume, with 38 transactions
 
 
 -- Lowest Transaction Volume Day
@@ -351,7 +361,7 @@ GROUP BY Transaction_Date
 ORDER BY total_transactions ASC
 LIMIT 1;
 
-# identified 2023-04-27 as the date with hte lowest transaction volume, with 12 transactions
+-- identified 2023-04-27 as the date with hte lowest transaction volume, with 12 transactions
 
 
 -- Most Popular Product
@@ -363,7 +373,7 @@ GROUP BY Item
 ORDER BY total DESC
 LIMIT 1;
 
-# Juice was the most frequently purchased product, appearing in 1063 transactions
+-- Juice was the most frequently purchased product, appearing in 1063 transactions
 
 
 -- Least Popular Product
@@ -375,7 +385,7 @@ GROUP BY Item
 ORDER BY total ASC
 LIMIT 1;
 
-# Tea was the least frequently purchased product, appearing 972 transactions
+-- Tea was the least frequently purchased product, appearing 972 transactions
 
 
 -- Total Sales by Product
@@ -386,18 +396,18 @@ WHERE Item IS NOT NULL
 GROUP BY Item
 ORDER BY Total_Sales DESC;
 
-# Salad generated the highest total sales, with 15600
+-- Salad generated the highest total sales, with 15600
 
 
 -- Average Transaction Value by Product
 
-SELECT Item, AVG(total_spent) AS avg_total_sales
+SELECT Item, AVG(total_spent) AS avg_transaction_value
 FROM cafe_sales1
 WHERE Item IS NOT NULL
 GROUP BY Item
 ORDER BY avg_total_sales DESC;
 
-# calculated the average transaction value for each product 
+-- calculated the average transaction value for each product 
 
 
 --  Total Quantity Sold by Product
@@ -408,18 +418,18 @@ WHERE Item IS NOT NULL
 GROUP BY Item
 ORDER BY total_quantity_sold DESC;
 
-# calculated the total quantity sold for each product
+-- calculated the total quantity sold for each product
 
 
 -- Payment Method Analysis
 
-SELECT Payment_Method, COUNT(*) AS total
+SELECT Payment_Method, COUNT(*) AS total_transactions
 FROM cafe_sales1
 WHERE Payment_Method IS NOT NULL
 GROUP BY Payment_Method
 ORDER BY total DESC;
 
-# Digital Wallet was the most frequently used payment method, with 2068 transactions
+-- Digital Wallet was the most frequently used payment method, with 2068 transactions
 
 
 -- Total Sales by Payment Method
@@ -430,7 +440,7 @@ WHERE Payment_Method IS NOT NULL
 GROUP BY Payment_Method
 ORDER BY 2 DESC;
 
-# digital wallet generated the highest total sales, with total sales of 18530
+-- digital wallet generated the highest total sales, with total sales of 18530
 
 
 -- Total Sales by Location
@@ -441,7 +451,7 @@ WHERE Location IS NOT NULL
 GROUP BY Location
 ORDER BY 2 DESC;
 
-# in-store generated the highest total sales, with total sales of 24598
+-- in-store generated the highest total sales, with total sales of 24598
 
 
 -- Transactions by Location
@@ -452,18 +462,18 @@ WHERE Location IS NOT NULL
 GROUP BY Location
 ORDER BY total DESC;
 
-# in-store had the highest transaction volume, with 2731 transactions
+-- in-store had the highest transaction volume, with 2731 transactions
 
 
 -- Average Transaction Value by Location
 
-SELECT Location, AVG(Total_Spent) AS average_total_sales
+SELECT Location, AVG(Total_Spent) AS average_transaction_value
 FROM cafe_sales1
 WHERE Location IS NOT NULL
 GROUP BY Location
 ORDER BY 2 DESC;
 
-# in-store had the highest average transaction value of 9.01 compared with 8.80 for takeaway
+-- in-store had the highest average transaction value of 9.01 compared with 8.80 for takeaway
 
 
 -- Monthly Sales Trend
@@ -474,7 +484,7 @@ WHERE Transaction_Date IS NOT NULL
 GROUP BY MONTH(Transaction_Date)
 ORDER BY 1 ASC;
 
-# calculated monthly total sales for 2023. sales remained relatively stable throughout the year, with June recording highest sales at 6678 and February recording the lowest at 6678
+-- calculated monthly total sales for 2023. sales remained relatively stable throughout the year, with June recording highest sales at 6678 and February recording the lowest at 6055
 
 
 -- Monthly Transaction Volume
@@ -485,7 +495,7 @@ WHERE Transaction_Date IS NOT NULL
 GROUP BY MONTH(Transaction_Date)
 ORDER BY 1 ASC;
 
-# calculated the total number of transactions for each month of 2023. March had the highest transaction volume with 749 transactions, while February had the lowest with 660
+-- calculated the total number of transactions for each month of 2023. March had the highest transaction volume with 749 transactions, while February had the lowest with 660
 
 
 -- Average Monthly Transaction Value
@@ -496,9 +506,9 @@ WHERE Transaction_Date IS NOT NULL
 GROUP BY MONTH(Transaction_Date)
 ORDER BY 1 ASC;
 
-# calculated the average transaction value for each month of 2023. April had the highest average transaction value at 9.28, while March had the lowest at 8.65
+-- calculated the average transaction value for each month of 2023. April had the highest average transaction value at 9.28, while March had the lowest at 8.65
 
-
+-- END OF EXPLORATORY DATA ANALYSIS
 
 
 

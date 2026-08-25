@@ -161,3 +161,8 @@ cafe_sales.csv
 This project demonstrates a complete SQL data analysis workflow, starting with data preparation and profiling, followed by data cleaning and validation, and ending with exploratory data analysis and business insights.
 
 The project demonstrates practical SQL skills including filtering, aggregation, grouping, window functions, CTEs, data cleaning, validation, and analytical querying.
+
+## Tableau Dashboard
+
+The cleaned cafe sales data was visualized using Tableau Public to create an interactive dashboard covering sales trends, product performance, location, and payment methods.
+[View Interactive Tableau Dashboard](https://public.tableau.com/app/profile/mohab.adel/viz/CafeSalesPerformanceDashboard_17876794531280/Dashboard1?publish=yes)

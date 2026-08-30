@@ -166,4 +166,4 @@ The project demonstrates practical SQL skills including filtering, aggregation, 
 
 The cleaned cafe sales data was visualized using Tableau Public to create an interactive dashboard covering sales trends, product performance, location, and payment methods.
 [View Interactive Tableau Dashboard](https://public.tableau.com/app/profile/mohab.adel/viz/CafeSalesPerformanceDashboard_17876794531280/Dashboard1?publish=yes)
-![Cafe Sales Performance Dashboard](dashboard.jpg)
+![Cafe Sales Performance Dashboard](cafedashboard.jpg)
